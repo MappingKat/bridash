@@ -1,5 +1,82 @@
-<div class="row">
-	<div class="col-lg-3 col-md-6 col-xs-12">
-    
+<div class="row" ng-controller="mapCtrl">
+	<div class="col-lg-5">
+    <form class="form-horizontal">
+    <!-- Filtering by FRA ID -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-4 col-xs-3 col-md-6 col-lg-4">FRA IDs</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+          <input type="text"ng-model="FRA_ID_query" class="form-control" ng-model-options="{debounce: 100}"/>
+          <span ng-click="clearFRAIDsFilter()" class="glyphicon glyphicon-remove form-control-feedback" style="cursor: pointer; pointer-events: all;" ></span>        
+        </div>
+      </div>
+      <!-- Filtering by Review Status -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-3 col-md-6 col-lg-4">Review Status:</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+          <label class="checkbox-inline" ng-repeat="option in inspectionStatusFilterOptions" ng-cloak>
+            <input type="checkbox" id="status_filter_option_{{option.id}}" ng-model="option.selected"> {{option.name}}          
+          </label>
+        </div>
+      </div>
+      <!-- Filtering by Fulcrum Status -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-3 col-md-6 col-lg-4">Fulcrum Status:</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+          <label class="checkbox-inline" ng-repeat="option in fulcrumStatusFilterOptions" ng-cloak>
+            <input type="checkbox" id="fulcrum_status_filter_option_{{option.id}}" ng-model="option.selected"> {{option.name}}          
+          </label>
+        </div>
+      </div>
+      <!-- Filtering by Inspector Name -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-3 col-md-6 col-lg-4">Inspector:</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+          <input type="text"ng-model="FilterNames" class="form-control" ng-model-options="{debounce: 100}"/></input>
+        </div>
+      </div>
+      <!-- Filtering Highest Priority -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-3 col-md-6 col-lg-4">Priority:</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+          
+        </div>
+      </div>
+      <!-- Filtering Inspection Date -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-3 col-md-6 col-lg-4">Inspection Date:</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+            <div class="col-xs-6"> 
+              <label class="control-label col-xs-3 col-md-6 col-lg-4">From:</label>
+              <div class="col-xs-8 col-md-6 col-lg-8">
+                <input type="text"ng-model="FilterDateFrom" class="form-control disabledInput" ng-model-options="{debounce: 300}"/></input>
+              </div>
+            </div>
+            <div class="col-xs-6"> 
+              <label class="control-label col-xs-3 col-md-6 col-lg-4">To:</label>
+              <div class="col-xs-8 col-md-6 col-lg-8">
+                <input type="text"ng-model="FilterDateTo" class="form-control disabledInput" ng-model-options="{debounce: 300}"/></input>
+              </div>
+            </div>
+        </div>
+      </div>    
+      <!-- Filtering Area -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-3 col-md-6 col-lg-4">Area:</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+          <button type="button" class="btn btn-default btn-sm" ng-click="filterByArea()">Filter Area</button>
+        </div>
+      </div>
+      <!-- Filtering Buttons -->
+      <div class="form-group has-feedback">
+        <label class="control-label col-xs-3 col-md-6 col-lg-4">Clear Filters:</label>
+        <div class="col-xs-8 col-md-6 col-lg-8">
+          <button type="button" class="btn btn-default btn-sm" ng-click="clearAllFilters()">Clear Filters <span class="glyphicon glyphicon-remove"></span></button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="col-lg-7">
+    <leaflet lf-center="fiji" layers="layers" height="600px">
+    </leaflet>
   </div>
 </div>

@@ -3,7 +3,7 @@
  */
 
 angular
-    .module('BriDash')
+    .module('myApp')
     .directive('rdWidget', rdWidget);
 
 function rdWidget() {

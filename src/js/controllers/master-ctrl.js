@@ -1,6 +1,6 @@
 /* Master Controller */
 
-angular.module('BriDash')
+angular.module('myApp')
   .controller('MasterCtrl', ['$scope', '$cookieStore', MasterCtrl]);
 
 function MasterCtrl($scope, $cookieStore) {
@@ -32,3 +32,17 @@ function MasterCtrl($scope, $cookieStore) {
     $scope.$apply();
   };
 }
+
+// angular.module('myApp')
+//   .service('UserService', ['$http',function($http) {
+//     var service = this;
+//     this.user = {};
+//     this.login = function(email, pwd) {
+//       $http.get('/auth',{ username: email, password: pwd}).success(function(data){
+//         service.user = data; 
+//       });      
+//     };
+//     this.register = function(newuser) {
+//       return $http.post('/users', newuser);
+//     };
+//   }]);

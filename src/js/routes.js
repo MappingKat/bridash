@@ -1,6 +1,6 @@
 'use strict';
-/* Route configuration for the BriDash module. */
-angular.module('BriDash').config(['$stateProvider', '$urlRouterProvider',
+/* Route configuration for the myApp module. */
+angular.module('myApp').config(['$stateProvider', '$urlRouterProvider',
   function($stateProvider, $urlRouterProvider) {
     // For unmatched routes
     $urlRouterProvider.otherwise('/');

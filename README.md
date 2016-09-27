@@ -1,8 +1,8 @@
-# BriDash rdash-angular
+# myApp rdash-angular
 ## Responsive, bloat free, bootstrap powered admin style dashboard!
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/rdash/rdash-angular?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-rdash-angular is an AngularJS implementation of the BriDash admin dashboard. The dashboard uses a small number of modules to get you started, along with some handy directives and controllers to speed up development using the dashboard.
+rdash-angular is an AngularJS implementation of the myApp admin dashboard. The dashboard uses a small number of modules to get you started, along with some handy directives and controllers to speed up development using the dashboard.
 
 Check out the [live example](http://rdash.github.io/)!
 

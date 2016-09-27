@@ -1,1 +1,1 @@
-angular.module('BriDash', ['ui.bootstrap', 'ui.router', 'ngCookies']);
+angular.module('myApp', ['ui.bootstrap', 'ui.router', 'ngCookies', 'leaflet-directive']);

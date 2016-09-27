@@ -1,0 +1,278 @@
+app.controller('mapCtrl',function($scope,$http,$filter,leafletData,fulcrumURLService){
+  var initialInspectionStatusFilterOptions = [{
+    name: "Uninspected",
+    id: "1",
+    selected: true
+  },{
+    name: "Inspected",
+    id: "2",
+    selected: true
+  },{
+    name: "Reviewed",
+    id: "3",
+    selected: true
+  },{
+    name: "Approved",
+    id: "4",
+    selected: true
+  }],
+  initialFulcrumStatusFilterOptions = [{
+    name: "Inspections Required",
+    selected: true
+  },{
+    name: "Inspection completed",
+    selected: true
+  },{
+    name: "Inspection Partially Completed",
+    selected: true
+  },{
+    name: "Structure requiring immediate attention",
+    selected: true
+  },{
+    name: "New Bridge",
+    selected: true
+  },{
+    name: "Duplicate",
+    selected: true
+  }],
+  tilesDict = {
+    openstreetmap: {
+      url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      options: {
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }
+    }
+  };
+  
+  $scope.inspectionStatusFilterOptions = angular.copy(initialInspectionStatusFilterOptions);
+  $scope.fulcrumStatusFilterOptions = angular.copy(initialFulcrumStatusFilterOptions)
+  $scope.fulcrumURLService = fulcrumURLService;
+  $scope.tiles = tilesDict.openstreetmap;
+  $scope.centre = {
+    lat:-17.6,
+    lng:179,
+    zoom:8
+  }
+  
+  //Get the data from the fulcrum service.
+  var FulcrumData = FulcrumDataService.data();
+  debugger;
+  
+  function fixNegativeLongitudes(latlng){
+    // some of the points have negative longitudes, which screws up leaflet displaying them. Fix this.
+    if(latlng.lng<0){
+      latlng.lng = latlng.lng + 360;
+    }
+    
+    return latlng
+  };
+  
+  $scope.getTotalRecords = function(){
+    return FulcrumData.features.length;
+  }
+  
+  //Make the GeoJSON object for use with the map
+  $scope.geoJson = {
+    data: angular.copy(FulcrumData),
+    pointToLayer: function(feature,latlng){
+      var icon = new L.Icon.Default();
+      var greenIcon = new L.Icon({
+        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [0, 0]
+      });
+      
+      icon.options.shadowSize = [0,0];
+      marker = L.marker(fixNegativeLongitudes(latlng), {icon: greenIcon});
+      marker.bindPopup('<a href="https://web.fulcrumapp.com/records/'+feature.properties.fulcrum_id+'" target="_blank">'+feature.properties.sec_overview_fra_id+'</a>');
+      return marker;
+    }
+  }
+  
+  //Filter Options object initialised to blank
+  $scope.filterOptions = {
+    FRAIDs: "",
+    Statuses: $scope.inspectionStatusFilterOptions,
+    FulcrumStatuses: $scope.fulcrumStatusFilterOptions,
+    Names: "",
+    Dates: {
+      From: "",
+      To: ""
+      }
+    };
+  
+  //function to run all filters
+  $scope.ApplyAllFilters = function(){
+    ApplyFilters()
+    //ApplyFilters_debounced();
+    //ApplyFilters_throttled();
+    //_.debounce(ApplyFilters,300);
+    //ApplyFilters(filterOptions)
+  }
+  
+  var ApplyFilters_debounced = _.debounce(ApplyFilters,0);
+  var ApplyFilters_throttled = _.throttle(ApplyFilters,0);
+  
+  function ApplyFilters(){
+    var filteredData = angular.copy(FulcrumData.features);
+    filteredData = $filter('byStatus')(filteredData,$scope.filterOptions.Statuses);
+    filteredData = $filter('byFulcrumStatus')(filteredData,$scope.filterOptions.FulcrumStatuses);
+    filteredData = $filter('byFRA_ID')(filteredData,$scope.filterOptions.FRAIDs);
+    filteredData = $filter('byInspectorName')(filteredData,$scope.filterOptions.Names);
+    filteredData = $filter('byInspectionDates')(filteredData,$scope.filterOptions.Dates);
+    $scope.geoJson.data.features = angular.copy(filteredData)
+  }
+  
+  //function to update searching in map based on FRA ID Filter
+  $scope.FRA_ID_query = "";
+  $scope.$watch('FRA_ID_query',function(newVal,oldVal){
+    if (newVal !== oldVal) {
+      $scope.filterOptions.FRAIDs = newVal;
+      //console.log($scope.filterOptions)
+      $scope.ApplyAllFilters($scope.filterOptions)
+      //$scope.geoJson.data.features = angular.copy($filter('byFRA_ID')(FulcrumData.features,newVal));
+    } else {
+     $scope.geoJson.data.features = angular.copy(FulcrumData.features);
+    }
+  });
+  
+  $scope.$watch('inspectionStatusFilterOptions', function(newVal, oldVal){
+    //console.log(newVal)
+    if (newVal !== oldVal) {
+      $scope.filterOptions.Statuses = newVal;
+      //$scope.geoJson.data.features = angular.copy($filter('byStatus')($scope.geoJson.data.features,newVal));
+      //console.log($scope.geoJson.data.features)
+      $scope.ApplyAllFilters($scope.filterOptions)
+    } else {
+      //console.log("new == old")
+      $scope.geoJson.data.features = angular.copy(FulcrumData.features);
+    }
+  }, true);
+  
+  $scope.$watch('fulcrumStatusFilterOptions', function(newVal, oldVal){
+    //console.log(newVal)
+    if (newVal !== oldVal) {
+      $scope.filterOptions.FulcrumStatuses = newVal;
+      $scope.ApplyAllFilters($scope.filterOptions)
+    } else {
+      //console.log("new == old")
+      $scope.geoJson.data.features = angular.copy(FulcrumData.features);
+    }
+  }, true);
+  
+  $scope.FilterNames = "";
+  $scope.$watch('FilterNames',function(newVal,oldVal){
+     if (newVal !== oldVal) {
+      $scope.filterOptions.Names = newVal;
+      //console.log($scope.filterOptions)
+      $scope.ApplyAllFilters($scope.filterOptions)
+      //$scope.geoJson.data.features = angular.copy($filter('byFRA_ID')(FulcrumData.features,newVal));
+     } else {
+      $scope.geoJson.data.features = angular.copy(FulcrumData.features);
+     }
+  });
+  
+  $scope.$watch('FilterDateTo',function(newVal,oldVal){
+     if (newVal !== oldVal) {
+      $scope.filterOptions.Dates.To = newVal;
+      //console.log($scope.filterOptions)
+      $scope.ApplyAllFilters($scope.filterOptions)
+      //$scope.geoJson.data.features = angular.copy($filter('byFRA_ID')(FulcrumData.features,newVal));
+     } else {
+      $scope.geoJson.data.features = angular.copy(FulcrumData.features);
+     }
+
+  });
+  
+  
+  $scope.$watch('FilterDateFrom',function(newVal,oldVal){
+     if (newVal !== oldVal) {
+      
+      $scope.filterOptions.Dates.From = newVal;
+      //console.log($scope.filterOptions)
+      $scope.ApplyAllFilters($scope.filterOptions)
+      //$scope.geoJson.data.features = angular.copy($filter('byFRA_ID')(FulcrumData.features,newVal));
+      
+     } else {
+      
+      $scope.geoJson.data.features = angular.copy(FulcrumData.features);
+     }
+
+  });
+  
+  
+  $scope.clearFRAIDsFilter = function(){
+    $scope.FRA_ID_query = "";
+  }
+  
+  // stuff to allow drawing polygons on the map to select bridges
+  
+  //layer to hold drawn elements
+  var  drawnSelections = new L.FeatureGroup()
+  
+  
+  //map controls
+  $scope.controls = {
+    draw: {
+      draw: {
+        polygon: {},
+        rectangle: {},
+        polyline: false,
+        circle: false,
+        line: false,
+        marker:false
+      },
+      edit: {
+        featureGroup: drawnSelections
+      }
+    }
+  };
+  
+  //function to add drawn areas to the layer
+  leafletData.getMap().then(function(map){
+    var drawnItems = $scope.controls.draw.edit.featureGroup
+    drawnItems.addTo(map);
+    
+    map.on('draw:created',function(e){
+      var layer = e.layer;
+      drawnItems.addLayer(layer);
+      //TODO: add code to enable persisting shapes to JSON strings
+      //console.log(drawnSelections.toGeoJSON())
+      //console.log(turf.area(drawnSelections.toGeoJSON()))
+      
+    });
+    
+    map.on('draw:deleted',function(e){
+      console.log('deleting')
+      drawnItems.removeLayer(e.layer);
+      console.log(drawnSelections.toGeoJSON())
+      //TODO: add code to remove shape from persisted JSON strings
+    });
+  });
+  
+  
+  $scope.filterByArea = function(){
+    var ptsWithin = turf.within($scope.geoJson.data,drawnSelections.toGeoJSON())
+    console.log(ptsWithin)
+    $scope.geoJson.data = angular.copy(ptsWithin);
+  }
+  
+  $scope.clearAllFilters = function(){
+    $scope.inspectionStatusFilterOptions = angular.copy(initialInspectionStatusFilterOptions);
+    $scope.filterOptions.Statuses = $scope.inspectionStatusFilterOptions;
+    $scope.FRA_ID_query  = "";
+    $scope.filterOptions.FRAIDs = $scope.FRA_ID_query;
+    
+    //clear any area filter
+    
+    //clear the fulcrum status filter
+    $scope.fulcrumStatusFilterOptions = angular.copy(initialFulcrumStatusFilterOptions)
+    $scope.filterOptions.FulrumStatuses = $scope.fulcrumStatusFilterOptions;
+    
+    //reapply the filters
+    $scope.ApplyAllFilters($scope.filterOptions) 
+  }
+})

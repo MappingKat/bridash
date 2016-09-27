@@ -4,7 +4,7 @@
  */
 
 angular
-    .module('BriDash')
+    .module('myApp')
     .directive('rdLoading', rdLoading);
 
 function rdLoading() {

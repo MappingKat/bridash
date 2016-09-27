@@ -3,7 +3,7 @@
  */
 
 angular
-    .module('BriDash')
+    .module('myApp')
     .directive('rdWidgetFooter', rdWidgetFooter);
 
 function rdWidgetFooter() {
